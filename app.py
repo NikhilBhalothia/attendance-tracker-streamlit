@@ -1,43 +1,56 @@
 import streamlit as st
 
-st.title("Smart Attendance Tracker")
+st.title("RTU Attendance Tracker")
 
-st.header("Enter Your Attended Classes")
-
-# Predefined subjects and total classes (Admin controlled)
-subjects = {
-    "Mathematics": 40,
-    "Physics": 35,
-    "Chemistry": 38,
-    "Computer Science": 42
+# RTU Subjects Semester-wise
+rtu_subjects = {
+    "Semester 1": ["Maths-1", "Physics", "Chemistry", "Basic Electrical", "Human Values"],
+    "Semester 2": ["Civil Engineering", "Mechanical Engineering", "Maths-2", "C++", "CAEG", "Chemistry", "Human Values"],
+    "Semester 3": ["Data Structures", "Digital Electronics", "Discrete Maths"],
 }
 
-total_all_classes = 0
-total_all_attended = 0
+# Select Semester
+semester = st.selectbox("Select Your Semester", list(rtu_subjects.keys()))
+subjects = rtu_subjects[semester]
 
-for subject, total_classes in subjects.items():
-    st.subheader(subject)
-    st.write(f"Total Classes Conducted: {total_classes}")
+st.subheader("Enter Attendance Details")
 
+total_attended_all = 0
+total_classes_all = 0
+
+for subject in subjects:
+    st.markdown(f"### {subject}")
+    
+    total_classes = st.number_input(
+        f"Total Classes Held for {subject}",
+        min_value=0,
+        step=1,
+        key=f"total_{subject}"
+    )
+    
     attended = st.number_input(
         f"Classes Attended in {subject}",
         min_value=0,
-        max_value=total_classes,
-        key=subject
+        step=1,
+        key=f"attended_{subject}"
     )
 
-    percentage = (attended / total_classes) * 100
-    st.write(f"Attendance: {percentage:.2f}%")
+    if attended > total_classes:
+        st.error("Attended classes cannot be more than total classes.")
+    else:
+        if total_classes > 0:
+            percentage = (attended / total_classes) * 100
+            st.write(f"Attendance in {subject}: {percentage:.2f}%")
 
-    total_all_classes += total_classes
-    total_all_attended += attended
+        total_attended_all += attended
+        total_classes_all += total_classes
 
 # Aggregate Attendance
-if st.button("Calculate Overall Attendance"):
-    overall_percentage = (total_all_attended / total_all_classes) * 100
-    st.header(f"Overall Attendance: {overall_percentage:.2f}%")
+if total_classes_all > 0:
+    aggregate = (total_attended_all / total_classes_all) * 100
+    st.subheader(f"Overall Attendance: {aggregate:.2f}%")
 
-    if overall_percentage < 75:
-        st.error("Warning: Overall Attendance Below 75%!")
+    if aggregate < 75:
+        st.error("⚠ Overall attendance below 75%")
     else:
-        st.success("Good Overall Attendance!")
+        st.success("✅ Good Attendance")
